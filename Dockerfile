@@ -14,6 +14,8 @@ ARG DEBIAN_FRONTEND="noninteractive"
 ENV NVIDIA_DRIVER_CAPABILITIES="compute,video,utility"
 # https://github.com/dlemstra/Magick.NET/issues/707#issuecomment-785351620
 ENV MALLOC_TRIM_THRESHOLD_=131072
+# set the health URL (from https://github.com/jellyfin/jellyfin-packaging/blob/master/docker/Dockerfile)
+ENV HEALTHCHECK_URL=http://localhost:8096/health
 
 RUN \
   echo "**** install jellyfin *****" && \
@@ -40,3 +42,7 @@ COPY root/ /
 # ports and volumes
 EXPOSE 8096 8920
 VOLUME /config
+
+# healthcheck (from https://github.com/jellyfin/jellyfin-packaging/blob/master/docker/Dockerfile)
+HEALTHCHECK --interval=30s --timeout=30s --start-period=10s --retries=3 \
+     CMD curl --noproxy 'localhost' -Lk -fsS "${HEALTHCHECK_URL}" || exit 1
